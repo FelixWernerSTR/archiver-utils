@@ -1,0 +1,27 @@
+<assembly>
+  <id>zipped-archive</id>
+  <formats>
+    <format>zip</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <fileSets>
+    <fileSet>
+      <directory>src/main/resources</directory>
+      <outputDirectory>./</outputDirectory>
+      <filtered>false</filtered>
+       <includes>
+        <include>startCmdHere.cmd</include>
+        <include>javaArchiverApp.cmd</include>
+        <include>log4j2.properties</include>
+      </includes>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>./</outputDirectory>
+      <filtered>false</filtered>
+      <includes>
+        <include>archiver-utils.jar</include>
+      </includes>
+    </fileSet> 
+  </fileSets> 
+</assembly>
