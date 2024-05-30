@@ -251,8 +251,8 @@ public class ArchiverApp {
 	private void logFinish(Instant start, String whoFinished) {
 		Duration now = Duration.between(start, Instant.now());
 		int totalNanos = now.getNano();
-		long totalSeconds = now.getNano();
-		logger.info(whoFinished+" finished with configuration: {}, took {} minutes, {} seconds {} millies", this, totalSeconds/60, totalSeconds%60, totalNanos%1000);
+		long totalSeconds = now.getSeconds();
+		logger.info(whoFinished+" finished with configuration: {}, took {} minutes, {} seconds, {} millies", this, totalSeconds/60, totalSeconds%60, totalNanos%1000);
 	}
 
 	@Override
