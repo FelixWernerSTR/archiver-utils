@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -155,6 +157,7 @@ public class ArchiverApp {
 	}
 
 	private void archive() throws IOException, ArchiveException {
+		Instant start = Instant.now();
 		logger.info("archive started with configuration: {}", this);	
 		if(!Files.exists(destinationPath)) {
 			Files.createDirectories(destinationPath);
@@ -182,7 +185,8 @@ public class ArchiverApp {
 			}
 
 		}
-		logger.info("archive finished with configuration: {}", this);
+		logFinish(start,"archive");
+
 	}
 	
 	private boolean isIncludes(Path s) {
@@ -202,6 +206,7 @@ public class ArchiverApp {
 	}
 
 	private void decompress() throws IOException, CompressorException {
+		Instant start = Instant.now();
 		logger.info("decompress with configuration: {}", this);
 		if (!Files.isRegularFile(inputPath)) {
 			logger.error("must be a regular file: {}", inputPath);
@@ -210,10 +215,11 @@ public class ArchiverApp {
 			logger.error("must be a file: {}", destinationPath);
 		}
 		ArchiverUtils.decompress(inputPath, destinationPath);
-		logger.info("decompress finished configuration: {}", this);
+		logFinish(start,"decompress");
 	}
 
 	private void compress() throws IOException, CompressorException {
+		Instant start = Instant.now();
 		logger.info("compress with configuration: {}", this);
 		if (!Files.isRegularFile(inputPath)) {
 			logger.error("must be a regular file: {}", inputPath);
@@ -222,10 +228,11 @@ public class ArchiverApp {
 			logger.error("must be a file: {}", destinationPath);
 		}
 		ArchiverUtils.compressFile(inputPath, destinationPath);
-		logger.info("compress finished with configuration: {}", this);
+		logFinish(start,"compress");
 	}
 
 	private void extract() throws IOException, ArchiveException {
+		Instant start = Instant.now();
 		logger.info("extract with configuration: {}", this);
 		if(!Files.exists(destinationPath)) {
 			Files.createDirectories(destinationPath);
@@ -238,7 +245,14 @@ public class ArchiverApp {
 			logger.error("must be a directory: {}", destinationPath);
 		}
 		ArchiverUtils.extract(inputPath, destinationPath);
-		logger.info("extract finished with configuration: {}", this);
+		logFinish(start,"extract");
+	}
+
+	private void logFinish(Instant start, String whoFinished) {
+		Duration now = Duration.between(start, Instant.now());
+		int totalNanos = now.getNano();
+		long totalSeconds = now.getNano();
+		logger.info(whoFinished+" finished with configuration: {}, took {} minutes, {} seconds {} millies", this, totalSeconds/60, totalSeconds%60, totalNanos%1000);
 	}
 
 	@Override
