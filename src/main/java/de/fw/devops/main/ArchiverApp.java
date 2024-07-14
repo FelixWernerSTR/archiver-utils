@@ -27,6 +27,7 @@ public class ArchiverApp {
 	private Path destinationPath;
 	private Path destinationFileName;
 	private boolean extract = false;
+    private String fileToExtract = null;
 	private boolean compress = false;
 	private boolean decompress = false;
 	private boolean dateStamp = false;
@@ -57,6 +58,10 @@ public class ArchiverApp {
 		if (commandLine.hasOption("e")) {
 			instance.extract(true);
 		}
+		
+    if (commandLine.hasOption("eo")) {
+      instance.fileToExtract(commandLine.getOptionValue("eo"));
+    }
 		
 		if (commandLine.hasOption("c")) {
 			instance.compress(true);
@@ -111,6 +116,11 @@ public class ArchiverApp {
 		return this;
 	}
 	
+  public ArchiverApp fileToExtract(String fileToExtract) {
+    this.fileToExtract = fileToExtract;
+    return this;
+  }
+	
 	public ArchiverApp compress(boolean compress) {
 		this.compress = compress;
 		return this;
@@ -146,15 +156,28 @@ public class ArchiverApp {
 
 		if (extract) {
 			extract();
+		}else if (fileToExtract!=null) {
+		  extractOne(inputPath,fileToExtract,destinationPath);
 		}else if (compress) {
-			compress();
-		}else if(decompress) {
+      compress();
+    }else if(decompress) {
 			decompress();
 		}else {
 			archive();		
 		}
 		logger.info("process finished");	
 	}
+
+	/**
+   * @param inputPath
+   * @param fileToExtract
+   * @param destinationPath
+	 * @throws ArchiveException 
+	 * @throws IOException 
+   */
+  private void extractOne(Path inputPath, String fileToExtract, Path destinationPath) throws IOException, ArchiveException {
+    ArchiverUtils.extractOne(inputPath, fileToExtract, destinationPath);
+  }
 
 	private void archive() throws IOException, ArchiveException {
 		Instant start = Instant.now();
@@ -252,7 +275,7 @@ public class ArchiverApp {
 		Duration now = Duration.between(start, Instant.now());
 		int totalNanos = now.getNano();
 		long totalSeconds = now.getSeconds();
-		logger.info(whoFinished+" finished with configuration: {}, took {} minutes, {} seconds, {} millies", this, totalSeconds/60, totalSeconds%60, totalNanos%1000);
+		logger.info("{} finished with configuration: {}, took {} minutes, {} seconds, {} millies", whoFinished, this, totalSeconds/60, totalSeconds%60, totalNanos%1000);
 	}
 
 	@Override
@@ -266,6 +289,8 @@ public class ArchiverApp {
 		builder.append(destinationFileName);
 		builder.append(", extract=");
 		builder.append(extract);
+        builder.append(", fileToExtract=");
+        builder.append(fileToExtract);
 		builder.append(", compress=");
 		builder.append(compress);
 		builder.append(", decompress=");

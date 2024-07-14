@@ -40,6 +40,10 @@ public class CommandLineHandler {
     extract.setRequired(false);
     options.addOption(extract);
     
+    Option extractOne = new Option("eo", "extractone", true, "extract a file from archive");
+    extractOne.setRequired(false);
+    options.addOption(extractOne);
+    
     Option compress = new Option("c", "compress", false, "compress file");
     compress.setRequired(false);
     options.addOption(compress);
