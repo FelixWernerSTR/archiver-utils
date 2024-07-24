@@ -100,28 +100,54 @@ public class ArchiverUtils {
       logger.info("attention! only the first file which will be found, will be extracted!");
       ArchiveEntry entry;
       while ((entry = archive.getNextEntry()) != null) {
-        if(entry.getName().endsWith(".zip") || entry.getName().endsWith(".tar") || entry.getName().endsWith(".jar") || entry.getName().endsWith(".war")) {
-          // erstmal das interne archiv "extracten" und danach auch darin suchen das file suchen und "extracten"
-          writeFile(entry.getName(), destinationDirectory, archive);
-          Files.exists(Path.of(destinationDirectory+"/"+entry.getName()));
-          isFoundAndExtracted = extractOne(Path.of(destinationDirectory+"/"+entry.getName()),fileName,destinationDirectory);
-          Files.delete(Path.of(destinationDirectory+"/"+entry.getName()));
-          Files.delete(Path.of(destinationDirectory+"/"+entry.getName()).getParent());
-          if(isFoundAndExtracted) {
-            return isFoundAndExtracted;
+        logger.debug("entry in archive found: {}", entry.getName());
+        
+        if ((!entry.isDirectory() && FilenameUtils.getExtension(entry.getName()).isBlank() && !entry.getName().endsWith(fileName))
+            || isSupportedArchiveExtension(entry)) {
+          // erstmal das interne archiv "extracten" und danach auch darin die Datei suchen und "extracten"
+          String entryName = entry.getName();
+          String extension = FilenameUtils.getExtension(entry.getName());
+          logger.debug("entry with extension: {}", extension);
+          
+          if (extension.isBlank()) {// special handling for archives with inner archives without extension(f. e. docker-images with linux-layer's)
+            entryName += ".tar";
+            writeFile(entryName, destinationDirectory, archive);
           }
-        }
-        if (entry.getName().endsWith(fileName)) {
+          
+          if (Files.exists(Path.of(destinationDirectory + "/" + entryName))) {
+            try {
+              
+              isFoundAndExtracted = extractOne(Path.of(destinationDirectory + "/" + entryName), fileName, destinationDirectory);
+              new File(destinationDirectory + "/" + entryName).deleteOnExit();
+              
+            } catch (ArchiveException | IllegalArgumentException ae) {
+              // ae.printStackTrace();
+              logger.debug("archive exception for entryName: {}", entryName);
+            }
+            
+            if (isFoundAndExtracted) {
+              return isFoundAndExtracted;
+            }
+          }
+        } else if (entry.getName().endsWith(fileName)) {
           writeFile(fileName, destinationDirectory, archive);
           logger.info("file found and extracted: {}", fileName);
           isFoundAndExtracted = true;
-          break; 
+          break;
         }
       }
     }
     return isFoundAndExtracted;
   }
-
+  
+  /**
+   * @param entry
+   * @return true/false
+   */
+  private static boolean isSupportedArchiveExtension(ArchiveEntry entry) {
+    return entry.getName().endsWith(".zip") || entry.getName().endsWith(".tar") || entry.getName().endsWith(".jar") || entry.getName().endsWith(".war");
+  }
+  
   /**
    * @param fileName
    * @param destinationDirectory
