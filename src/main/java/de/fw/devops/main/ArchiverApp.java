@@ -194,7 +194,7 @@ public class ArchiverApp {
 			Files.list(inputPath).filter(s->Files.isDirectory(s)).filter(s->isIncludes(s)).forEach(s->{
 				try {
 					archiveSubPath(s);
-				} catch (IOException | ArchiveException e) {
+				} catch (IOException e) {
 					e.printStackTrace();
 				}
 			});
